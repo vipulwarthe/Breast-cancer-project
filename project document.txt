@@ -1,0 +1,141 @@
+AWS SageMaker Linear-Learner Algorithm for Breast Cancer Prediction:
+===================================================================
+AWS Services use for this project: 
+
+Amazon sagemaker/s3/IAM/Rest API/Lambda Function
+
+project link: 
+
+https://srinipratapgiri.medium.com/aws-sagemaker-linear-learner-algorithm-for-breast-cancer-prediction-92d8635994a1
+
+Background:
+
+AWS SageMaker is a fully managed AWS service to build, train and deploy Machine Learning(ML) models. It has three services namely Notebook Instances, Training Instances and Endpoint Instances.The Notebook Instances can host Jupiter notebooks to perform exploratory data analysis by accessing raw data from Amazon s3 buckets and stores the training data again in s3. The Training Instances train the ML models on the training data by choosing any of the instances based on the data and model requirements. The trained models are in turn send to s3 for future use. The trained models are deployed to the endpoints by Endpoint Instances for making predictions on the unseen data.
+
+AWS SageMaker has many inbuilt ML algorithms and Linear-Learner is one amongst them. It is a supervised learning algorithm to solve either Regression or Classification problems. I will be using Linear-Learner algorithm for classifying whether a patient has breast cancer or not.
+
+The idea is here is to explore and understand the capabilities and functionality of AWS SageMaker for data exploratory , training and deployment processes.
+
+
+1) Create s3 bucket:
+====================
+First create s3 bucket name "sagemaker-17" and add folder name "cancer-dir" in that folder add the data.csv file. 
+
+Download the dataset from below link and upload to the s3 bucket.
+
+https://www.kaggle.com/uciml/breast-cancer-wisconsin-data
+
+https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Original)
+
+
+2)Create a Notebook Instance:
+=============================
+Next step is to create a Notebook Instance to run a Jupyter Notebook.
+
+Notebook name-cancer-detection
+Notebook instance type-ml.t2.medium
+Permission and encryption- create new IAM sagemaker execution role,choose any s3 bucket
+Root access-Enable 
+other setting default and create notebook instance.
+
+a)Open the AWS SageMaker service
+
+b)On the left of the side of the pane open the Notebook Instance
+
+c) Configure the Notebook instance with the rquired EC2 Instance suitable for your project
+
+d) Assign an IAM role to the Notebook Instance to access the AWS Sagemaker
+
+e) Once the Notebook is inService you can open Jupyter Notebook
+
+
+3)Setup lambda function:
+======================= 
+
+-click on create function
+-select Author from scratch -
+-Basic information - Function Name - lambda-ml-function - Runtime -python 3.7
+-Architecture -86_64
+-Change default execution role - Create a new role with basic Lambda permissions
+-Advanced settings - default
+-create function.
+
+-After successfully created the fuction lambda-ml-function go to the down code tab-code source and delete the code and paste new code from below link:
+
+https://aws.amazon.com/blogs/machine-learning/call-an-amazon-sagemaker-model-endpoint-using-amazon-api-gateway-and-aws-lambda/
+
+-now deploy the code
+-click on Configuration - click on Edit environment variables - Add environment variables
+-Key - ENDPOINT_NAME - value- DEMO-linear-endpoint-202305111406 (endpoint name paste) -Save
+
+-Now go to IAM service and click on Roles - click on lambda-ml-function-role-zm42w5it role - click on Trust relationships - Trusted entities - all is good
+-now open AWSLambdaBasicExecutionRole-25e8fb8f-9f75-417e-a648-05398ff55ddc policy - edit in JSON format - add code in policy editor -Next - save changes
+
+4)Create Aamzon API Gateway: 
+============================
+
+- select REST API -Build - 
+-Choose the protocol - Rest - New API - API name - myapi -Description- my rest api
+-Endpoint Type-Regional - create API
+-Click on Actions - create resourse - Resource Name - api-ml-model -create resource
+-Now again go to Action tab and create Method - Post -
+-Integration type - Lambda Function
+-Lambda Region - select your region
+-Lambda Function - ml-model-lambda - save
+
+-click on Test - paste below code in request body:
+-{"data": "1257815, 5, 1, 3, 1, 2, 2, 1, 1, 6, 4, 3, 2, 5, 5, 6, 5, 4, 4, 23, 6, 3, 2, 7, 8, 8, 3, 2, 1, 6"} 
+
+-click on Test
+
+-It will give you a prediction for the given input as "B"
+
+Go to Action-  Deploy API
+Deployment stage - [New Stage]
+Stage Name - Production
+Stage Description - Production Environment
+Deployment description - NA
+Deploy 
+
+It will create Invoke URL
+
+5)Creater EC2 instance:
+=======================
+
+launch instance with ubuntu AMI/t2.micro/SSH/ALL Traffic/8gb configuration.
+
+-sudo su
+-sudo apt update && sudo apt upgrade -y
+-apt install python3-pip
+-sudo pip install --upgrade boto3
+-python3
+-import json
+-import requests
+
+-your need to use the resource name "myresource" and deploy API name "Production" 
+
+-( Invoke URL: https://dsegpwu8kk.execute-api.us-east-1.amazonaws.com/Production) copy URL from API gateway (stages) and paste in below command and after "URL/paste resource name"
+
+-r=requests.post("https://d534ka8e6c.execute-api.us-east-1.amazonaws.com/Production/api-ml-model", data=json.dumps({"data": "1257815, 5, 1, 3, 1, 2, 2, 1, 1, 6, 4, 3, 2, 5, 5, 6, 5, 4, 4, 23, 6, 3, 2, 7, 8, 8, 3, 2, 1, 6"})) 
+-r.content
+
+It will give you a prediction as "M"
+
+-Also it will give you URL for prodution deployment..
+
+6)Conclusion
+============
+
+In this Demo, We created a model endpoint deployed and hosted by SageMaker. Then we created serverless components (a REST API and Lambda function) that invoke the endpoint. Now we know how to call an ML model endpoint hosted by SageMaker using serverless technology.
+
+
+Deletation process:
+===================
+delete instance first
+delete rest api
+delete lambda function
+delete notebook
+
+
+
+
