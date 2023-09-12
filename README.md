@@ -108,13 +108,19 @@ It will create Invoke URL
 
 launch instance with ubuntu AMI/t2.micro/SSH/ALL Traffic/8gb configuration.
 
-#sudo su
-#sudo apt update && sudo apt upgrade -y
-#apt install python3-pip
-#sudo pip install --upgrade boto3
-#python3
-#import json
-#import requests
+sudo su
+
+sudo apt update && sudo apt upgrade -y
+
+apt install python3-pip
+
+sudo pip install --upgrade boto3
+
+python3
+
+import json
+
+import requests
 
 -your need to use the resource name "myresource" and deploy API name "Production" 
 
