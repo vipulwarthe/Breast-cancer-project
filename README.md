@@ -108,7 +108,7 @@ It will create Invoke URL
 
 launch instance with ubuntu AMI/t2.micro/SSH/ALL Traffic/8gb configuration.
 
-sudo su
+#sudo su
 
 sudo apt update && sudo apt upgrade -y
 
